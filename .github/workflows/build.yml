@@ -1,0 +1,31 @@
+name: Build with Node
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+        cache: 'npm'
+    - run: npm test
+    - run: npm run build
+    - run: rm -rf site
+    - run: mkdir site
+    - run: cp -a dist site
+    - run: cp -a img fonts index.html style-rtl.css locale.js oauth.json CNAME translations site
+    - run: cd site
+    - run: git init
+    - run: git config user.name "GitHub Actions"
+    - run: git config user.email "actions@somewhere.com"
+    - run: git add .
+    - run: git commit -m "CI deploy to gh-pages"
+    - run: git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages
